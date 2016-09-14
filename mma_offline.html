@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MMa Offline</title>
+    <script type="text/javascript" src="cloudant_config.js"></script>
+    <script src="pouchdb-5.4.5.js"></script>
+    <script src="jquery-3.1.0.js"></script>
+    <script src="domJSON.js"></script>
+
+</head>
+<body>
+<h1>Remote db info</h1>
+<div id="RemoteDb"></div>
+
+<h1>Localdb info</h1>
+<div id="LocalDb"></div>
+<h1>Sync info</h1>
+<div id="syncinfo"></div>
+<h1>stuff</h1>
+<div id="stuff">
+
+</div>
+
+<script type="text/javascript">
+    remoteDb = new PouchDB('https://'+cloudant_config.api_key+':'+cloudant_config.api_password+'@'+cloudant_config.url);
+    localDb = new PouchDB('kittens');
+
+    var rdiv = document.getElementById('RemoteDb');
+
+    remoteDb.info().then(function (info) {
+        rdiv.innerHTML = info.toString();
+        for (var x in info) {
+            rdiv.innerHTML += x + ':' + info[x] + "<br>";
+        }
+    })
+    var ldiv = document.getElementById('LocalDb');
+
+    localDb.info().then(function (info) {
+        ldiv.innerHTML = info.toString();
+        for (var x in info) {
+            ldiv.innerHTML += x + ':' + info[x] + "<br>";
+        }
+    })
+
+
+    function showQuestion(doc){
+
+    }
+</script>
+
+
+<form id="f1">
+    <label for="Turn_Type_Performance">Turn Type/Performance</label>
+    <fieldset id="Turn_Type_Performance">
+    <label for="turn_type">Turn Type</label>
+    <select id="turn_type" name="turn_type">
+        <option value="snow_plough">snow plough</option>
+        <option value="Basic Christie">Basic Christie</option>
+        <option value="Stem Christie">Stem Christie</option>
+        <option value="Paralell">Paralell</option>
+        <option value="Bumps">Bumps</option>
+    </select>
+    <label for="turn_performance">Performance</label>
+    <select id="turn_performance" name="turn_performance" >
+        <option value="Skidded">Skidded</option>
+        <option value="Steered" >Steered</option>
+        <option value="Carved" >Carved</option>
+        <option value="Railed" >Railed</option>
+        <option value="Pure Carved" >Pure Carved</option>
+    </select>
+    <label for="turn_shape">Shape</label>
+    <select id="turn_shape" name="turn_shape">
+        <option value="S shaped">S shaped</option>
+        <option value="J shaped">J shaped</option>
+        <option value="Z shaped">Z shaped</option>
+    </select>
+        <label for="turn_Symetry">Symetry</label>
+    <select id="turn_symetry" name="turn_symetry">
+        <option value="Symetrical">Symetrical</option>
+        <option value="Asymetrical">Asymetrical</option>
+    </select>
+    </fieldset>
+
+    <label for="el4">el4</label>
+    <select id="el4" name="el4">
+        <option value="ans 1">Ans1</option>
+        <option value="ans 2">Ans 2</option>
+        <option value="ans 3">Ans 3</option>
+    </select>
+</form>
+
+<script type="text/javascript">
+    $(function(){
+       var f1 = $('#f1');
+        var f1_json = JSON.stringify(f1.serializeArray());
+        $("#stuff").text( f1_json);
+    });
+
+    var def1 = {
+        sections: [{
+            section: 'Turn_type', fieldsets: [
+                {
+                    fieldset: 'Turn Type and Performance', fields: [
+                    {
+                        type: "select",
+                        id: "type",
+                        options: ["snow plough", "BAsic Christie", "Stem Christie", "Paralell", "Bumps"]
+                    },
+                    {
+                        type: "select",
+                        id: "performance",
+                        options: ["skidded", "steared", "carved", "railed", "pure carved"]
+                    },
+                    {
+                        type: "select",
+                        id: "shape",
+                        options: ["s shaped", "J sahped", "Z shaped"]
+                    }
+                    ,
+                    {
+                        type: "select",
+                        id: "symetry",
+                        options: ["symetrical", "asymetrical"]
+                    }
+                ]
+
+                }]
+        },
+            {
+                section: 'Soft Focus', fieldsets: [
+                {
+                    fieldset: 'Psychological', fields: [
+                    {
+                        type: "select",
+                        id: "state",
+                        options: ["scared", "comfortable", "aggressive"]
+                    }
+                ]
+                },
+                {
+                    fieldset: 'Physical', fields: [
+                    {
+                        type: "select",
+                        id: "fitness",
+                        options: ["very unift", "unfit", "fit enough", "very fit"]
+                    },
+                    {
+                        type: "select",
+                        id: "age",
+                        options: ["child", "pre-teen", "teen", "young adult", "adult", "older adult"]
+                    },
+                    {
+                        type: "select",
+                        id: "gender",
+                        options: ["indeterminate", "male", "female"]
+                    }
+                ]
+                },
+
+            ]
+            }]
+    };
+
+
+    function render_form(def, destination){
+        var form='<form id="form1">';
+        for(var sect_index in def.sections){
+            form +="<section>";
+            var fieldsets = def.sections[sect_index].fieldsets;
+            for( var fieldset_index in fieldsets){
+                var fieldset = fieldsets[fieldset_index];
+                form +="<fieldset id:'"+fieldset.fieldset+"'>";
+                for (var field_index in fieldset.fields){
+                    field = fieldset.fields[field_index];
+                    switch( field.type){
+                        case 'select': form += "<select id='"+field.id+"' name='"+field.id+"'>";
+                                for( var option in field.options){
+                                    form += "<option value='"+field.options[option]+"'>"+field.options[option]+"</option>";
+                                }
+                            form +="</select>";
+                    }
+                }
+                form +="</fieldset>";
+            }
+            form +="</section>";
+        }
+        form +='</form>';
+        destination.append(form);
+    }
+
+    function render_def(def, destination){
+        var form ='<form id="form2">';
+        $.each(def.sections, function(section){
+            form +='<section>';
+            $.each(this.fieldsets, function(fielset){
+                form +='<label for="'+this.fieldset+'">'+this.fieldset+'</label>';
+                form +='<fieldset id="'+this.fieldset+'">';
+                $.each(this.fields,function(field){
+                    form +='<label for="'+this.id+'">'+this.id+':</label>';
+                    switch( this.type){
+                        case 'select': form += "<select id='"+this.id+"' name='"+this.id+"'>";
+                            for( var option in this.options){
+                                form += "<option value='"+this.options[option]+"'>"+this.options[option]+"</option>";
+                            }
+                            form +="</select>";
+                    }
+                })
+                form += '</fieldset>'
+            })
+            form +='</section>';
+        })
+        form += "</form>";
+        destination.append(form);
+    }
+</script>
+</body>
+</html>
